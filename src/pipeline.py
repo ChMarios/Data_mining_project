@@ -2,6 +2,7 @@ import os
 
 from data.data_loader import DataLoader
 from data.preprocess import Preprocess
+from modeling import SupervisedLearning
 
 def run_pipeline():
 
@@ -23,12 +24,25 @@ def run_pipeline():
         proc.statistics()
         proc.data_transformation()
 
-        proc.plot_outliers()
-        proc.plot_distribution()
-        proc.plot_correlation()
+        # proc.plot_outliers()
+        # proc.plot_distribution()
+        # proc.plot_correlation()
         proc.feature_selection(threshold=0.95)
         
         proc.save_clean_data(processed_data_path)
+
+        clean_df = proc.df
+
+        X = clean_df.drop('Label', axis=1)
+        y = clean_df['Label']
+
+        learner = SupervisedLearning(X,y)
+
+        learner.prepare_data()
+
+        for opt in [1, 2, 3]:
+            print(f"\nTraining Model Option: {opt}")
+            learner.run_classification(option=opt)
         
         print("--- Pipeline Completed Successfully ---")
     else:
