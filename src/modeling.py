@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import classification_report, confusion_matrix
 
 import numpy as np
 
@@ -79,10 +79,4 @@ class SupervisedLearning():
         grid_cv = GridSearchCV(classifier, params, cv=5, scoring='f1_weighted', n_jobs=-1)
         grid_cv.fit(self.X_train, self.y_train)
         self.evaluate(grid_cv, "Scenario 2 (With CV)")
-
-
-    def score(self):
-        pass
-        
-
     
