@@ -55,11 +55,24 @@ class SupervisedLearning():
  
         # Confusion matrix heatmap
         cm = confusion_matrix(self.y_test, predictions)
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.title(f"Confusion Matrix – {model_name}\n({title})")
-        plt.ylabel("True label")
-        plt.xlabel("Predicted label")
+        cm_norm = confusion_matrix(self.y_test, predictions, normalize='true')
+        class_names = getattr(self, 'label_classes_', np.unique(self.y_test))
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(
+            cm_norm, 
+            annot=cm,         
+            fmt='d',           
+            cmap='Blues',      
+            xticklabels=class_names, 
+            yticklabels=class_names,
+            cbar_kws={'label': 'Recall Rate (Normalized)'}
+        )
+        plt.title(f"Confusion Matrix – {model_name}\n({title.replace('_', ' ')})", fontsize=14, fontweight='bold')
+        plt.ylabel("True Label", fontsize=12, fontweight='bold')
+        plt.xlabel("Predicted Label", fontsize=12, fontweight='bold')
+        plt.xticks(rotation=45, ha='right')
+        plt.yticks(rotation=0)
+        plt.tight_layout()
         safe_title = title.lower().replace(" ", "_").replace("(", "").replace(")", "").replace("/", "_")
         fname = f"cm_{option}_{safe_title}.png"
         _save_fig(fname)
@@ -112,13 +125,13 @@ class SupervisedLearning():
         grid_split = GridSearchCV(classifier, params, cv=pds,
                                   scoring="f1_weighted", n_jobs=-1)
         grid_split.fit(X_combined, y_combined)
-        best_split = self.evaluate(grid_split, "Scenario 1 – Train/Val Split", option)
+        best_split = self.evaluate(grid_split, "Train_Val_Split", option)
  
         # 5 fold cross validation
         grid_cv = GridSearchCV(classifier, params, cv=5,
                                scoring='f1_weighted', n_jobs=-1)
         grid_cv.fit(self.X_train, self.y_train)
-        best_cv = self.evaluate(grid_cv, "Scenario 2 – 5-fold CV", option)
+        best_cv = self.evaluate(grid_cv, "5_fold_CV", option)
  
         # compare best params
         print(f"\n--- Hyper-parameter comparison for {model_name} ---")

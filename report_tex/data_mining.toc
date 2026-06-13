@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}Περιβάλλον Υλοποίησης \& Εγκατάσταση}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Γλώσσα και Αρχιτεκτονική Περιβάλλοντος}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Αναλυτική Καταγραφή Βιβλιοθηκών Λογισμικού}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Βήματα Εγκατάστασης \& Εκτέλεσης}{3}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Διαδικασία Υλοποίησης (Architecture \& Pipeline)}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Στάδιο 1: Φόρτωση Δεδομένων (\texttt {DataLoader})}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Στάδιο 2: Προεπεξεργασία \& Καθαρισμός (\texttt {Preprocess})}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Στάδιο 3: Επιβλεπόμενη Μάθηση (\texttt {SupervisedLearning})}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Στάδιο 4: Μη Επιβλεπόμενη Μάθηση (\texttt {UnsupervisedLearning})}{5}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Σχολιασμός Τελικών Αποτελεσμάτων (Evaluation \& Discussion)}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Προετοιμασία Δεδομένων \& Ανισορροπία Κλάσεων}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Επιβλεπόμενη Μάθηση (Supervised Learning)}{7}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Logistic Regression (Λογιστική Παλινδρόμηση)}{7}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Decision Tree \& Random Forest (Δενδρικά Μοντέλα)}{7}{subsubsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.3}Μη Επιβλεπόμενη Μάθηση (Unsupervised Learning \& Clustering)}{8}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}K-Means \& Ιεραρχική Ομαδοποίηση (Agglomerative)}{8}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}DBSCAN}{8}{subsubsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.4}Τελικό Συμπέρασμα Σύγκρισης}{8}{subsection.3.4}%

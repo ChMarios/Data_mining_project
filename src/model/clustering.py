@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score,davies_bouldin_score
 from sklearn.metrics.cluster import contingency_matrix
 import matplotlib.pyplot as plt
-import seaborn as sns
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import os
 
@@ -85,21 +85,36 @@ class UnsupervisedLearning():
 
 
     def _plot_pca(self, labels, title):
+    
         if self.pca_data is None:
-            pca = PCA(n_components=2, random_state=42)
+            pca = PCA(n_components=3, random_state=42)
             self.pca_data = pca.fit_transform(self.X)
-            print(f"  PCA explained variance: {pca.explained_variance_ratio_.sum():.2%}")
+            print(f"  PCA 3D explained variance: {pca.explained_variance_ratio_.sum():.2%}")
  
-        plt.figure(figsize=(8, 6))
-        scatter = plt.scatter(self.pca_data[:, 0], self.pca_data[:, 1],
-                              c=labels, cmap='viridis', alpha=0.4, s=5)
-        plt.colorbar(scatter, label='Cluster')
-        plt.title(f"PCA Visualization – {title}")
-        plt.xlabel("PC1")
-        plt.ylabel("PC2")
-        safe = title.lower().replace(" ", "_").replace("(", "").replace(")", "").replace("=", "")
-        _save_fig(f"pca_{safe}.png")
+        fig = plt.figure(figsize=(18, 8))
+        fig.suptitle(f"PCA 3D Analysis: Predicted Clusters vs Real Labels ({title})", fontsize=16, fontweight='bold')
 
+        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+        scatter1 = ax1.scatter(self.pca_data[:, 0], self.pca_data[:, 1], self.pca_data[:, 2],
+                               c=labels, cmap='viridis', alpha=0.5, s=6)
+        ax1.set_title("Model Predicted Clusters", fontsize=12, fontweight='bold')
+        ax1.set_xlabel("PC1")
+        ax1.set_ylabel("PC2")
+        ax1.set_zlabel("PC3")
+        fig.colorbar(scatter1, ax=ax1, label='Cluster ID', shrink=0.6)
+
+        ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+        scatter2 = ax2.scatter(self.pca_data[:, 0], self.pca_data[:, 1], self.pca_data[:, 2],
+                               c=self.y, cmap='tab20', alpha=0.5, s=6)
+        ax2.set_title("Actual Ground Truth Labels (y)", fontsize=12, fontweight='bold')
+        ax2.set_xlabel("PC1")
+        ax2.set_ylabel("PC2")
+        ax2.set_zlabel("PC3")
+        fig.colorbar(scatter2, ax=ax2, label='Label Class (Encoded)', shrink=0.6)
+
+        plt.tight_layout()
+        safe = title.lower().replace(" ", "_").replace("(", "").replace(")", "").replace("=", "")
+        _save_fig(f"pca_3d_comparison_{safe}.png")
 
     def run_kmeans(self, k):
 

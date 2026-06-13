@@ -93,8 +93,9 @@ class Preprocess():
  
         plt.figure(figsize=(12, 6))
         order = label_counts.index
-        sns.countplot(data=self.df, y='Label', order=order,
+        ax = sns.countplot(data=self.df, y='Label', order=order,
                       hue='Label', palette='viridis', legend=False)
+        ax.set_xscale('log')
         plt.title('Class Distribution (Label)')
         plt.xlabel('Count')
         _save_fig("class_distribution.png")
@@ -109,8 +110,9 @@ class Preprocess():
         plt.figure(figsize=(5 * len(important_cols), 5))
         for i, col in enumerate(important_cols):
             plt.subplot(1, len(important_cols), i + 1)
-            sns.boxplot(y=self.df[col])
-            plt.title(f'Boxplot – {col}')
+            sns.boxplot(y=np.log10(self.df[col].abs() + 1))
+            plt.title(f'Boxplot (Log10) – {col}')
+            plt.ylabel('Log10 Value')
         plt.tight_layout()
         _save_fig("boxplots_outliers.png")
 
