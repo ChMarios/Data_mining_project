@@ -5,10 +5,26 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+
+FIGURES = os.path.join(os.path.dirname(__file__), "..", "..", "reports", "figures")
+
+def _save_fig(filename):
+    os.makedirs(FIGURES, exist_ok=True)
+    plt.savefig(os.path.join(FIGURES, filename), bbox_inches="tight", dpi=150)
+    plt.close()
+
 class Preprocess():
 
     def __init__(self,df):
         self.df = df.copy()
+
+    
+    def dataset_overview(self):
+        print(f"Dataset shape : {self.df.shape[0]:,} rows × {self.df.shape[1]} columns")
+        print("\nColumn dtypes:")
+        print(self.df.dtypes.value_counts())
+        print("\nFirst 5 rows:")
+        print(self.df.head())
 
     def checking_missing_values(self):
         #Identify the number of missing values
@@ -16,6 +32,8 @@ class Preprocess():
 
         missing_values = data.isna().sum()
         print(missing_values.loc[missing_values > 0])
+
+
         numeric_cols = data.select_dtypes(include=np.number).columns
         count = np.isinf(data[numeric_cols]).sum()
         print(count[count>0])
@@ -39,18 +57,28 @@ class Preprocess():
         print(Nans_data)
         data.head(20)
 
+    def removing_dupl(self):
+        before = self.df.duplicated().sum()
+        self.df.drop_duplicates(inplace=True)
+        print(f"\nDuplicates removed: {before:,} remaining: {self.df.duplicated().sum()}")
+
+
     def statistics(self):
-        numeric_stats = self.df.describe().T
-        numeric_stats['median'] = self.df.median(numeric_only=True)
-        print(numeric_stats)
+        print("\nStatistics")
+        stats = self.df.describe().T
+        stats['median'] = self.df.median(numeric_only=True)
+        print(stats)
+        return stats
+
 
     def data_transformation(self):
 
         le = LabelEncoder()
-        label = le.fit_transform(self.df["Label"])
-        print(self.df["Label"].unique())
-        self.df.drop("Label",axis=1,inplace=True)
-        self.df["Label"] = label
+        print(f"\nLabel classes: {self.df['Label'].unique()}")
+        self.df["Label"] = le.fit_transform(self.df["Label"])
+        self.label_classes_ = le.classes_   # store for reference in report
+        print(f"Encoded as   : {list(range(len(le.classes_)))}")
+
 
     def removing_dupl(self) :
         
@@ -59,54 +87,70 @@ class Preprocess():
         print(self.df.duplicated().sum())
 
     def plot_distribution(self):
-
         label_counts = self.df['Label'].value_counts()
-
-        print("istribution:")
+        print("\nClass Distribution:")
         print(label_counts)
+ 
+        plt.figure(figsize=(12, 6))
+        order = label_counts.index
+        sns.countplot(data=self.df, y='Label', order=order,
+                      hue='Label', palette='viridis', legend=False)
+        plt.title('Class Distribution (Label)')
+        plt.xlabel('Count')
+        _save_fig("class_distribution.png")
 
-        plt.figure(figsize=(12,6))
-
-        order = self.df['Label'].value_counts().index
-        sns.countplot(data=self.df, y='Label', order=order,hue="Label", palette='viridis',legend=False)
-        plt.title('Class Distribution')
-        plt.show()
 
     def plot_outliers(self):
-        important_cols = ['Flow Duration', 'Total Fwd Packets', 'Packet Length Mean']
 
-        plt.figure(figsize=(15, 5))
+        important_cols = [c for c in
+                          ['Flow Duration', 'Total Fwd Packets', 'Packet Length Mean']
+                          if c in self.df.columns]
+ 
+        plt.figure(figsize=(5 * len(important_cols), 5))
         for i, col in enumerate(important_cols):
-            plt.subplot(1, 3, i+1)
+            plt.subplot(1, len(important_cols), i + 1)
             sns.boxplot(y=self.df[col])
-            plt.title(f'Boxplot of {col}')
+            plt.title(f'Boxplot – {col}')
         plt.tight_layout()
-        plt.show()
+        _save_fig("boxplots_outliers.png")
 
-    def plot_correlation(self):
-        correlation_matrix = self.df.corr()
-        heatmap_segment_size = 15
 
-        num_columns = len(correlation_matrix.columns)
-        for i in range(0, num_columns, heatmap_segment_size):
-            for j in range(0, num_columns, heatmap_segment_size):
-                subset_corr_matrix = correlation_matrix.iloc[i:i+heatmap_segment_size, j:j+heatmap_segment_size]
+    def plot_correlation(self, threshold=0.8):
+        numeric_df = self.df.select_dtypes(include=np.number)
+        corr = numeric_df.corr()
+        
+        high_corr_features = set()
+        for i in range(len(corr.columns)):
+            for j in range(i):
+                if abs(corr.iloc[i, j]) > threshold:
+                    high_corr_features.add(corr.columns[i])
+                    high_corr_features.add(corr.columns[j])
+                    
+        filtered_corr = corr.loc[list(high_corr_features), list(high_corr_features)]
+        
+        if not filtered_corr.empty:
+            plt.figure(figsize=(14, 11))
+            sns.heatmap(filtered_corr, annot=True, cmap='coolwarm', fmt=".2f", 
+                        annot_kws={"size": 7}, vmin=-1, vmax=1, cbar=True)
+            plt.title(f"Filtered Correlation Heatmap (Abs Corr > {threshold})", fontsize=14)
+            plt.tight_layout()
+            _save_fig("heatmap.png")
+ 
 
-                plt.figure(figsize=(10, 8))
-                sns.heatmap(subset_corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-                plt.title("Correlation Heatmap - Columns {} to {}".format(i+1, i+heatmap_segment_size))
-                plt.show()
 
-    def feature_selection(self,threshold = 0.95):
-        corr_matrix = self.df.corr().abs()
-
-        upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-
-        to_drop = [column for column in upper.columns if any(upper[column] > threshold)]
-
+    def feature_selection(self, threshold=0.95):
+        numeric_df = self.df.select_dtypes(include=np.number)
+        corr_matrix = numeric_df.corr().abs()
+        upper = corr_matrix.where(
+            np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
+        )
+        to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
         self.df.drop(columns=to_drop, inplace=True)
-        print(f"Removed {len(to_drop)}")
+        print(f"\nFeature selection (threshold={threshold}): removed {len(to_drop)} columns")
+        if to_drop:
+            print("  Dropped:", to_drop)
         return to_drop
+
 
 
     def save_clean_data(self, output_path):

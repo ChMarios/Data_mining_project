@@ -4,8 +4,21 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
-
+import os
+import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
+
+FIGURES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "reports", "figures")
+
+def _save_fig(filename):
+    os.makedirs(FIGURES_DIR, exist_ok=True)
+    plt.savefig(os.path.join(FIGURES_DIR, filename), bbox_inches="tight", dpi=150)
+    plt.close()
+ 
+ 
+MODEL_NAMES = {1: "Logistic Regression", 2: "Decision Tree", 3: "Random Forest"}
+
 
 class SupervisedLearning():
 
@@ -30,53 +43,87 @@ class SupervisedLearning():
         self.y_train, self.y_val, self.y_test = y_train, y_val, y_test
 
 
-    def evaluate(self,model,title):
+    def evaluate(self, model, title, option):
         predictions = model.predict(self.X_test)
-        print(f"\nResults for {title}:")
-        print(f"Best Parameters: {model.best_params_}")
+        model_name  = MODEL_NAMES[option]
+ 
+        print(f"\n{'='*60}")
+        print(f"  {title}  |  {model_name}")
+        print(f"  Best params: {model.best_params_}")
+        print(f"{'='*60}")
+        print(classification_report(self.y_test, predictions, zero_division=0))
+ 
+        # Confusion matrix heatmap
+        cm = confusion_matrix(self.y_test, predictions)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.title(f"Confusion Matrix – {model_name}\n({title})")
+        plt.ylabel("True label")
+        plt.xlabel("Predicted label")
+        safe_title = title.lower().replace(" ", "_").replace("(", "").replace(")", "").replace("/", "_")
+        fname = f"cm_{option}_{safe_title}.png"
+        _save_fig(fname)
+        print(f"Confusion matrix saved {fname}")
+ 
+        return model.best_params_
 
-        print(classification_report(self.y_test, predictions))
-        print("Confusion Matrix :")
-        print(confusion_matrix(self.y_test, predictions))
 
-    def get_grid(self,option):
-        
-        if option == 1: # Logistic Regression
-            return {'C': [0.1, 1, 10], 'solver': ['lbfgs'], 'max_iter': [1000]}
+    def get_grid(self, option):
+        if option == 1:   # Logistic Regression
+            return {'C': [0.01, 0.1, 1, 10],
+                    #'solver' : ['saga'],
+                    'solver': ['lbfgs'],
+                    'max_iter': [1000]}
         elif option == 2: # Decision Tree
-            return {'max_depth': [10, 20, None], 'criterion': ['gini', 'entropy']}
+            return {'max_depth': [5, 10, 20, None],
+                    'criterion': ['gini', 'entropy'],
+                    'min_samples_split': [2, 10]}
         elif option == 3: # Random Forest
-            return {'n_estimators': [50, 100], 'max_depth': [10, 20]}
+            return {'n_estimators': [50, 100, 200],
+                    'max_depth': [10, 20, None],
+                    'min_samples_split': [2, 5]}
+
     
     def select_classifier(self,option):
         
         if option == 1:
-            classifier = LogisticRegression(max_iter=1000, class_weight='balanced')
+            classifier = LogisticRegression(solver='lbfgs',max_iter=1000, class_weight='balanced')
         elif option == 2:
-            classifier = DecisionTreeClassifier(class_weight='balanced')
+            classifier = DecisionTreeClassifier(class_weight='balanced',random_state=42)
         elif option == 3:
-            classifier = RandomForestClassifier(class_weight='balanced', n_jobs=-1)
+            classifier = RandomForestClassifier(class_weight='balanced', n_jobs=-1,random_state=42)
         else:
             raise ValueError("option values are : 1,2,3")
         
         return classifier
 
-    def run_classification(self,option):
-
+    def run_classification(self, option):
         classifier = self.select_classifier(option)
-        params = self.get_grid(option)
-
-        split = [-1] * len(self.X_train) + [0] * len(self.X_val)
-        pds = PredefinedSplit(test_fold=split)
-
+        params     = self.get_grid(option)
+        model_name = MODEL_NAMES[option]
+        print(f"  Model: {model_name}")
+ 
+        # Prefined split
+        split      = [-1] * len(self.X_train) + [0] * len(self.X_val)
+        pds        = PredefinedSplit(test_fold=split)
         X_combined = np.concatenate((self.X_train, self.X_val), axis=0)
         y_combined = np.concatenate((self.y_train, self.y_val), axis=0)
-
-        grid = GridSearchCV(classifier, params, cv=pds, scoring="f1_weighted")
-        grid.fit(X_combined,y_combined)
-        self.evaluate(grid,"Senario No CV")
-
-        grid_cv = GridSearchCV(classifier, params, cv=5, scoring='f1_weighted', n_jobs=-1)
+ 
+        grid_split = GridSearchCV(classifier, params, cv=pds,
+                                  scoring="f1_weighted", n_jobs=-1)
+        grid_split.fit(X_combined, y_combined)
+        best_split = self.evaluate(grid_split, "Scenario 1 – Train/Val Split", option)
+ 
+        # 5 fold cross validation
+        grid_cv = GridSearchCV(classifier, params, cv=5,
+                               scoring='f1_weighted', n_jobs=-1)
         grid_cv.fit(self.X_train, self.y_train)
-        self.evaluate(grid_cv, "Scenario 2 (With CV)")
+        best_cv = self.evaluate(grid_cv, "Scenario 2 – 5-fold CV", option)
+ 
+        # compare best params
+        print(f"\n--- Hyper-parameter comparison for {model_name} ---")
+        print(f"  Train/Val Split best : {best_split}")
+        print(f"  5-fold CV best       : {best_cv}")
+        
+
     

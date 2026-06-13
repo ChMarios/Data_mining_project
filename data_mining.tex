@@ -1,0 +1,237 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Πακέτα για Ελληνικά και Γραμματοσειρές μέσω XeLaTeX ---
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage{xgreek}
+
+% --- Βασικά Πακέτα ---
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{float}
+
+% --- Διαμόρφωση Εμφάνισης Κώδικα ---
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	numberstyle=\tiny\color{codegray},
+	basicstyle=\ttfamily\small,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=4
+}
+
+\title{\textbf{Υλοποιητική Άσκηση - Τεχνικές Εξόρυξης Δεδομένων}}
+\author{\textbf{Χρήστος Μάριος Νικολόπουλος - 1100644}}
+\date{Εαρινό Εξάμηνο 2025-2026}
+
+\begin{document}
+	
+	\maketitle
+	\newpage
+	\tableofcontents
+	\newpage
+	
+	% =========================================================================
+	\section{Περιβάλλον Υλοποίησης \& Εγκατάσταση}
+	
+	\subsection{Γλώσσα και Αρχιτεκτονική Περιβάλλοντος}
+	Σύμφωνα με τις προδιαγραφές της εργαστηριακής άσκησης, ως γλώσσα υλοποίησης ορίστηκε η \textbf{Python} (έκδοση $\ge$ 3.10). Για την ανάπτυξη και τη διασφάλιση της σταθερότητας του κώδικα, δημιουργήθηκε ένα απομονωμένο εικονικό περιβάλλον (\textit{virtual environment - .venv}). Αυτή η πρακτική αποτρέπει τις διενέξεις μεταξύ των εκδόσεων των βιβλιοθηκών του συστήματος και εξασφαλίζει την πλήρη αναπαραγωγιμότητα των πειραμάτων.
+	
+	\subsection{Αναλυτική Καταγραφή Βιβλιοθηκών Λογισμικού}
+	Για την κάλυψη των αναγκών των τριών ερωτημάτων (EDA, Classification, Clustering), επιλέχθηκαν και χρησιμοποιήθηκαν οι εξής εξειδικευμένες βιβλιοθήκες:
+	
+	\begin{itemize}
+		\item \textbf{\texttt{pandas} \& \texttt{numpy}:} Αποτελούν τον πυρήνα της διαχείρισης δεδομένων. Χρησιμοποιήθηκαν για τη φόρτωση των CSV αρχείων, τον εντοπισμό και την αφαίρεση διπλότυπων, τη διαχείριση ελλιπών τιμών, καθώς και για όλους τους απαραίτητους μετασχηματισμούς των πινάκων (DataFrames).
+		\item \textbf{\texttt{scikit-learn} (\texttt{sklearn}):} Η κεντρική βιβλιοθήκη μηχανικής μάθησης. Μέσω αυτής υλοποιήθηκαν οι τεχνικές κανονικοποίησης, οι αλγόριθμοι επιβλεπόμενης μάθησης (\texttt{LogisticRegression}, \texttt{DecisionTreeClassifier}, \texttt{RandomForestClassifier}), η βελτιστοποίηση υπερπαραμέτρων (\texttt{GridSearchCV}, \texttt{StratifiedKFold}), καθώς και οι αλγόριθμοι ομαδοποίησης (\texttt{KMeans}, \texttt{AgglomerativeClustering}, \texttt{DBSCAN}).
+		\item \textbf{\texttt{matplotlib} \& \texttt{seaborn}:} Βιβλιοθήκες οπτικοποίησης. Χρησιμοποιήθηκαν για τη σχεδίαση των πινάκων συσχέτισης (Heatmaps) και των πινάκων σύγχυσης (Confusion Matrices), οι οποίοι αποθηκεύονται αυτόματα σε μορφή εικόνας (\texttt{.png}).
+	\end{itemize}
+	
+	\subsection{Βήματα Εγκατάστασης \& Εκτέλεσης}
+	Οι εξαρτήσεις του έργου έχουν καταγραφεί συγκεντρωτικά στο αρχείο \texttt{requirements.txt}. Η διαδικασία στησίματος του περιβάλλοντος από το τερματικό περιλαμβάνει τα εξής βήματα:
+	
+	\begin{lstlisting}[language=bash, caption={Εντολές Εγκατάστασης και Εκτέλεσης Pipeline}]
+		# 1. Πλοήγηση στον ριζικό κατάλογο του project
+		cd path/to/Data_mining_project
+		
+		# 2. Δημιουργία εικονικού περιβάλλοντος (virtual environment)
+		python -m venv .venv
+		
+		# 3. Ενεργοποίηση του περιβάλλοντος 
+		.venv\Scripts\activate
+		
+		# 4. Αναβάθμιση του pip και αυτόματη εγκατάσταση από το requirements.txt
+		pip install --upgrade pip
+		pip install -r requirements.txt
+		
+		# 5. Εκτέλεση του κεντρικού script του pipeline
+		python src/pipeline.py
+	\end{lstlisting}
+	
+	\newpage
+	% =========================================================================
+	\section{Διαδικασία Υλοποίησης (Architecture \& Pipeline)}
+	Η αρχιτεκτονική του συστήματος βασίζεται σε αντικειμενοστραφή σχεδιασμό (Object-Oriented Programming). Κάθε στάδιο του πειράματος έχει απομονωθεί σε ξεχωριστό αρχείο κώδικα (module), ενώ η συνολική ροή ενορχηστρώνεται από ένα κεντρικό σενάριο εκτέλεσης (\texttt{pipeline.py}).
+	
+	\subsection{Στάδιο 1: Φόρτωση Δεδομένων (\texttt{DataLoader})}
+	Η αρχική ανάγνωση των δεδομένων υλοποιείται μέσω της κλάσης \texttt{DataLoader} στο αρχείο \texttt{data\_loader.py}. Η μέθοδος \texttt{load\_data()} εντοπίζει δυναμικά τον κατάλογο εργασίας και χρησιμοποιεί τη βιβλιοθήκη \texttt{glob} για να συλλέξει όλα τα αρχεία μορφής \texttt{.csv} από το μονοπάτι \texttt{../data/raw}. Για κάθε αρχείο, πραγματοποιείται αφαίρεση κενών διαστημάτων από τους τίτλους των στηλών (\texttt{columns.str.strip()}) για την αποφυγή σφαλμάτων αναφοράς, και όλα τα επιμέρους DataFrames ενοποιούνται με την \texttt{pd.concat()}.
+	
+	\begin{lstlisting}[language=Python, caption={Υλοποίηση Φόρτωσης Δεδομένων στην DataLoader}]
+		def load_data(self):
+		current_dir = os.getcwd()
+		path = os.path.join(current_dir, "..", "data", "raw")
+		all_files = glob.glob(os.path.join(path, "*.csv"))
+		print("Loading Data")
+		list_df = []
+		for f in all_files:
+		temp_df = pd.read_csv(f, low_memory=False)
+		temp_df.columns = temp_df.columns.str.strip()
+		list_df.append(temp_df)
+		self.df = pd.concat(list_df, ignore_index=True)
+		return self.df
+	\end{lstlisting}
+	
+	\subsection{Στάδιο 2: Προεπεξεργασία \& Καθαρισμός (\texttt{Preprocess})}
+	Η κλάση \texttt{Preprocess} (\texttt{preprocess.py}) αναλαμβάνει την εξυγίανση του dataset πριν από τη μοντελοποίηση:
+	\begin{itemize}
+		\item \textbf{Διαχείριση Ελλιπών \& Άπειρων Τιμών:} Οι τιμές απείρου (\texttt{inf}, \texttt{-inf}) αντικαθίστανται με \texttt{NaN}. Οι στήλες \texttt{Flow Bytes/s} και \texttt{Flow Packets/s} συμπληρώνονται με τη μέση τιμή τους (\texttt{fillna}), ενώ τυχόν εναπομείναντα κενά διαγράφονται οριστικά (\texttt{dropna}).
+		\item \textbf{Αφαίρεση Διπλοτύπων:} Η μέθοδος \texttt{removing\_dupl()} απομακρύνει τις πανομοιότυπες εγγραφές, θωρακίζοντας τα μοντέλα από το φαινόμενο του overfitting.
+		\item \textbf{Επιλογή Χαρακτηριστικών (Feature Selection):} Υπολογίζεται ο πίνακας συσχέτισης (\texttt{corr().abs()}). Με κατώφλι \texttt{threshold=0.95}, η μέθοδος εντοπίζει και αφαιρεί τις στήλες του άνω τριγωνικού πίνακα που παρουσιάζουν υπερβολική πολυγραμμικότητα, μειώνοντας τη διαστασιμότητα.
+	\end{itemize}
+	
+	\begin{lstlisting}[language=Python, caption={Μέθοδος Feature Selection βάσει Συσχέτισης}]
+		def feature_selection(self, threshold=0.95):
+		numeric_df = self.df.select_dtypes(include=np.number)
+		corr_matrix = numeric_df.corr().abs()
+		upper = corr_matrix.where(
+		np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
+		)
+		to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+		self.df.drop(columns=to_drop, inplace=True)
+		print(f"\nFeature selection (threshold={threshold}): removed {len(to_drop)} columns")
+		return to_drop
+	\end{lstlisting}
+	
+	\subsection{Στάδιο 3: Επιβλεπόμενη Μάθηση (\texttt{SupervisedLearning})}
+	Η κλάση \texttt{SupervisedLearning} (\texttt{modeling.py}) διαχειρίζεται την εκπαίδευση των διεργασιών ταξινόμησης.
+	\begin{enumerate}
+		\item \textbf{Διαχωρισμός \& Κανονικοποίηση:} Στο \texttt{pipeline.py} απομονώνεται στρωματοποιημένο δείγμα \textbf{50.000 εγγραφών}. Η \texttt{prepare\_data()} χωρίζει το δείγμα σε Train (60\%), Validation (20\%) και Test (20\%) με \texttt{stratify=y}, και ακολουθεί τυποποίηση των χαρακτηριστικών με \texttt{StandardScaler}.
+		\item \textbf{Στρατηγική Grid Search:} Για τα μοντέλα Logistic Regression, Decision Tree και Random Forest (με \texttt{class\_weight='balanced'}), εκτελούνται δύο σενάρια: το Scenario 1 (χρήση \texttt{PredefinedSplit} για αξιολόγηση στο Validation set) και το Scenario 2 (κλασική διασταυρούμενη επικύρωση 5-fold CV στο Train set).
+	\end{enumerate}
+	
+	\begin{lstlisting}[language=Python, caption={Υλοποίηση των δύο Σεναρίων Grid Search}]
+		def run_classification(self, option):
+		classifier = self.select_classifier(option)
+		params     = self.get_grid(option)
+		model_name = MODEL_NAMES[option]
+		
+		# Scenario 1 - Predefined split (Train/Val Split)
+		split      = [-1] * len(self.X_train) + [0] * len(self.X_val)
+		pds        = PredefinedSplit(test_fold=split)
+		X_combined = np.concatenate((self.X_train, self.X_val), axis=0)
+		y_combined = np.concatenate((self.y_train, self.y_val), axis=0)
+		
+		grid_split = GridSearchCV(classifier, params, cv=pds, scoring="f1_weighted", n_jobs=-1)
+		grid_split.fit(X_combined, y_combined)
+		best_split = self.evaluate(grid_split, "Scenario 1 - Train/Val Split", option)
+		
+		# Scenario 2 - 5 fold cross validation
+		grid_cv = GridSearchCV(classifier, params, cv=5, scoring='f1_weighted', n_jobs=-1)
+		grid_cv.fit(self.X_train, self.y_train)
+		best_cv = self.evaluate(grid_cv, "Scenario 2 - 5-fold CV", option)
+	\end{lstlisting}
+	
+	\subsection{Στάδιο 4: Μη Επιβλεπόμενη Μάθηση (\texttt{UnsupervisedLearning})}
+	Η κλάση \texttt{UnsupervisedLearning} (\texttt{clustering.py}) εκτελείται σε υποσύνολο \textbf{5.000 δειγμάτων} χωρίς τη χρήση του \texttt{Label}. 
+	Πραγματοποιείται εύρεση βέλτιστου $k$ (Elbow method \& Silhouette analysis) για τον K-Means, εκτέλεση Ιεραρχικής Ομαδοποίησης με διάφορα κριτήρια σύνδεσης (\texttt{ward}, \texttt{complete}, \texttt{average}), και Grid Search για τον DBSCAN με μεταβολή των παραμέτρων \texttt{eps} και \texttt{min\_samples}.
+	
+	\begin{lstlisting}[language=Python, caption={Διαδικασία DBSCAN Grid Search}]
+		def dbscan_grid_search(self, eps_values=(0.3, 0.5, 1.0, 2.0), min_samples_values=(5, 10, 20)):
+		results = []
+		for eps in eps_values:
+		for ms in min_samples_values:
+		model  = DBSCAN(eps=eps, min_samples=ms, n_jobs=-1)
+		labels = model.fit_predict(self.X)
+		n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+		
+		if n_clusters >= 2:
+		sil = silhouette_score(self.X, labels, sample_size=10000, random_state=42)
+		else:
+		sil = -1.0
+		results.append({'eps': eps, 'min_samples': ms, 'silhouette': sil})
+		best = max(results, key=lambda r: r['silhouette'])
+		return self.run_dbscan(eps=best['eps'], min_samples=best['min_samples']), best
+	\end{lstlisting}
+	
+	\newpage
+	% =========================================================================
+	\section{Σχολιασμός Τελικών Αποτελεσμάτων (Evaluation \& Discussion)}
+	
+	\subsection{Προετοιμασία Δεδομένων \& Ανισορροπία Κλάσεων (Data Preprocessing \& Class Imbalance)}
+	Το αρχικό σύνολο δεδομένων (CIC-IDS-2017) χαρακτηρίζεται από τεράστιο όγκο ($2.830.743$ εγγραφές και $79$ χαρακτηριστικά). Η εφαρμογή του φιλτραρίσματος για την αφαίρεση άπειρων ($inf$) και ελλιπών ($NaN$) τιμών, σε συνδυασμό με τη μέθοδο επιλογής χαρακτηριστικών (Feature Selection) με κατώφλι συσχέτισης $\text{threshold} = 0.95$, οδήγησε στην αφαίρεση $23$ περιττών στηλών. Τα χαρακτηριστικά όπως τα \texttt{Total Backward Packets} και \texttt{Idle Mean} αποκλείστηκαν, αφήνοντας ένα πιο συμπαγές και λιγότερο θορυβώδες σύνολο δεδομένων.
+	
+	Το πιο κρίσιμο στοιχείο που καθορίζει τη συμπεριφορά όλων των μοντέλων είναι η \textbf{ακραία ανισορροπία κλάσεων (Extreme Class Imbalance)}. Η κλάση \texttt{0} (BENIGN) κυριαρχεί καθολικά, ενώ μειονοτικές κλάσεις όπως η \texttt{14} (Heartbleed) ή η \texttt{13} (DoS GoldenEye) εμφανίζουν ελάχιστα δείγματα. Για τον λόγο αυτό, η δειγματοληψία $50.000$ γραμμών κρίθηκε απαραίτηται ώστε να είναι υπολογιστικά εφικτή η εκπαίδευση και η αξιολόγηση των αλγορίθμων.
+	
+	\subsection{Εποπτευόμενη Μάθηση (Supervised Learning)}
+	Η σύγκριση των τριών μοντέλων ταξινόμησης πραγματοποιήθηκε σε δύο σενάρια: Train/Validation Split (Σενάριο 1) και 5-fold Cross Validation (Σενάριο 2).
+	
+	\subsubsection{Logistic Regression (Λογιστική Παλινδρόμηση)}
+	Η Λογιστική Παλινδρόμηση παρουσίασε τη χαμηλότερη συνολική απόδοση με $\text{Accuracy} = 0.89$ και $\text{Macro Avg } F_1\text{-Score} = 0.53$. Λόγω της γραμμικής της φύσης, αδυνατεί να διαχωρίσει τις μειονοτικές κλάσεις:
+	\begin{itemize}
+		\item Στην κλάση \texttt{1}, εμφάνισε εξαιρετικά χαμηλό $\text{Precision} = 0.01$ αλλά υψηλό $\text{Recall} = 0.86$, γεγονός που υποδηλώνει τεράστιο αριθμό ψευδώς θετικών δειγμάτων (False Positives).
+		\item Στις πολύ σπάνιες κλάσεις (\texttt{12}, \texttt{14}), το $F_1\text{-score}$ κυμάνθηκε κοντά στο μηδέν ($0.03 - 0.04$).
+		\item Τα αποτελέσματα μεταξύ των δύο σεναρίων ήταν πανομοιότυπα, αποδεικνύοντας ότι το μοντέλο δεν υποφέρει από overfitting, αλλά έχει φτάσει στο όριο της εκφραστικής του ικανότητας (underfitting).
+	\end{itemize}
+	
+	\subsubsection{Decision Tree \& Random Forest (Δενδρικά Μοντέλα)}
+	Αντίθετα με τη γραμμική παλινδρόμηση, οι δενδρικοί αλγόριθμοι επέδειξαν \textbf{σχεδόν τέλεια συμπεριφορά} ($\text{Accuracy} = 1.00$, $\text{Weighted Avg } F_1\text{-Score} = 1.00$).
+	\begin{itemize}
+		\item Το \textbf{Decision Tree} (Σενάριο 1) κατάφερε να διαχειριστεί αποτελεσματικά τις περισσότερες σπάνιες κλάσεις (π.χ. κλάση \texttt{1} με $F_1 = 0.80$ και κλάση \texttt{12} με $F_1 = 0.73$). Ωστόσο, στην κλάση \texttt{14}, η οποία διέθετε μόλις $3$ δείγματα στο test set, κανένα μοντέλο δεν πέτυχε σωστή πρόβλεψη ($F_1 = 0.00$).
+		\item Το \textbf{Random Forest} (Σενάριο 2 με $\text{max\_depth} = 20$ και $\text{n\_estimators} = 200$) επιβεβαίωσε την εξαιρετική ικανότητα γενίκευσής του μέσω του 5-fold Cross Validation. Η μικρή πτώση του recall στις κλάσεις \texttt{1} ($0.14$) και \texttt{12} ($0.40$) οφείλεται αποκλειστικά στο ελάχιστο support ($7$ και $5$ δείγματα αντίστοιχα), όπου ακόμα και ένα μοναδικό σφάλμα μειώνει κατακόρυφα τα ποσοστά.
+	\end{itemize}
+	\textbf{Συμπέρασμα Εποπτευόμενης:} Οι μη γραμμικοί κανόνες απόφασης των δέντρων είναι ιδανικοί για ανίχνευση εισβολών, καθώς οι κυβερνοεπιθέσεις αναγνωρίζονται εύκολα μέσω συγκεκριμένων κατωφλίων (thresholds) σε χαρακτηριστικά ροής πακέτων (π.χ. \texttt{Flow Duration}).
+	
+	\subsection{Μη Εποπτευόμενη Μάθηση (Unsupervised Learning / Clustering)}
+	Η ανάλυση της συσταδοποίησης σε σχέση με τις πραγματικές ετικέτες (Labels) αποκάλυψε τη γεωμετρική δομή του χώρου των χαρακτηριστικών.
+	
+	\subsubsection{K-Means \& Ιεραρχική Ομαδοποίηση (Ward, Complete, Average)}
+	Όλοι οι αλγόριθμοι που βασίζονται σε αποστάσεις συμφώνησαν ότι η βέλτιστη επιλογή βάσει Silhouette Score είναι η δημιουργία μόλις δύο συστάδων ($k=2$).
+	\begin{equation}
+		\text{Silhouette Score}_{(k=2)} = 0.9752, \quad \text{Davies-Bouldin Index} = 0.0168
+	\end{equation}
+	Ωστόσο, η εξέταση του Confusion Matrix αποκάλυψε τη μαθηματική παγίδα:
+	\begin{itemize}
+		\item Το \textbf{Cluster 0} συγκέντρωσε το $99.9\%$ όλων των δεδομένων (συμπεριλαμβανομένων σχεδόν όλων των BENIGN και των επιθέσεων).
+		\item Το \textbf{Cluster 1} περιείχε \textbf{μόνο 1 δείγμα} (κλάσης BENIGN).
+	\end{itemize}
+	\textbf{Ερμηνεία:} Ο K-Means επηρεάζεται έντονα από ακραίες τιμές (outliers). Ο αλγόριθμος απομόνωσε ένα εξαιρετικά απομακρυσμένο σημείο σε δικό του cluster και συγχώνευσε όλα τα υπόλοιπα μαζί. Όταν δοκιμάστηκε η δομή για $k=3$, το Silhouette Score κατέρρευσε στο $0.4414$, αποδεικνύοντας ότι οι $15$ πραγματικές κλάσεις των επιθέσεων \textbf{δεν σχηματίζουν σφαιρικές συστάδες} στον αρχικό χώρο.
+	
+	\subsubsection{DBSCAN}
+	Ο αλγόριθμος DBSCAN ($\text{eps}=2.0$, $\text{min\_samples}=5$) λειτούργησε με βάση την πυκνότητα, εντοπίζοντας $28$ διαφορετικά clusters και $414$ σημεία θορύβου (noise), με $\text{Silhouette Score} = 0.3109$.
+	
+	Η ανάλυση έδειξε ότι η πραγματική κλάση BENIGN διασπάστηκε σε πολλαπλά clusters διαφορετικού μεγέθους (π.χ. $1739$ δείγματα στο Cluster 0, $791$ στο Cluster 1, $356$ στο Cluster 2). 
+	
+	\textbf{Ερμηνεία:} Το αποτέλεσμα αυτό υποδηλώνει ότι \textbf{η φυσιολογική δικτυακή κίνηση δεν είναι ομοιογενής}, αλλά αποτελείται από πολλές διακριτές υπο-συμπεριφορές (π.χ. HTTP browsing, FTP transfers), τις οποίες ο DBSCAN μπόρεσε να διαχωρίσει με βάση την τοπική τους πυκνότητα.
+	
+	\subsection{Γενικό Συμπέρασμα Αναφοράς}
+	\begin{enumerate}
+		\item \textbf{Η Εποπτευόμενη Μάθηση} (και συγκεκριμένα οι αλγόριθμοι Random Forest και Decision Trees) αποτελεί την ενδεδειγμένη προσέγγιση για το συγκεκριμένο dataset, επιτυγχάνοντας σχεδόν απόλυτη ακρίβεια στην ανίχνευση των επιθέσεων παρά την έντονη ανισορροπία των κλάσεων.
+		\item \textbf{Η Μη Εποπτευόμενη Μάθηση} ανέδειξε ότι οι κυβερνοεπιθέσεις ``ανακατεύονται'' γεωμετρικά με την κανονική κίνηση. Χωρίς την ύπαρξη των labels, ο διαχωρισμός τους είναι αδύνατος με απλές μεθόδους αποστάσεων (K-Means), καθώς οι αλγόριθμοι τείνουν απλά να απομονώνουν στατιστικά έκτοπα δείγματα (outliers) ή να χαρτογραφούν την πολυμορφία της ίδιας της κανονικής κίνησης (DBSCAN).
+	\end{enumerate}
+\end{document}
